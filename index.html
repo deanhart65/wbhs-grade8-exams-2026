@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WBHS Grade 8 — Mid-Year Exams 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --navy: #0d1b2a;
@@ -365,11 +366,11 @@
   .study-day-body { padding: 12px 16px; }
   .study-slot {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
     padding: 10px 12px;
     border-radius: 8px;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+    transition: opacity 0.2s;
   }
   .study-slot:last-child { margin-bottom: 0; }
   .slot-subject {
@@ -511,6 +512,113 @@
     .tab-content { display: block !important; }
   }
 
+  /* LANGUAGE TOGGLE */
+  .lang-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 0.75rem;
+  }
+  .lang-toggle button {
+    flex: 1;
+    padding: 9px 12px;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-mid);
+  }
+  .lang-toggle button.active {
+    background: #2e2660;
+    border-color: #2e2660;
+    color: var(--white);
+  }
+  .lang-toggle button.inactive {
+    background: #f5f3ef;
+    color: var(--text-muted);
+    text-decoration: line-through;
+    opacity: 0.6;
+  }
+
+  /* TICK / COMPLETE */
+  .study-slot.done {
+    opacity: 0.5;
+  }
+  .study-slot.done .slot-subject {
+    text-decoration: line-through;
+  }
+  .tick-btn {
+    background: none;
+    border: 1.5px solid var(--border);
+    border-radius: 50%;
+    width: 28px; height: 28px;
+    min-width: 28px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    transition: all 0.15s;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+  .tick-btn:hover { border-color: var(--teal); color: var(--teal); }
+  .tick-btn.ticked {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: white;
+  }
+  .study-day.all-done .study-day-header {
+    background: #f0faf4;
+  }
+  .study-day.all-done .study-day-date {
+    background: var(--teal) !important;
+    color: white !important;
+  }
+  .day-complete-badge {
+    display: none;
+    font-size: 11px;
+    background: var(--teal);
+    color: white;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+  .study-day.all-done .day-complete-badge { display: inline-block; }
+
+  /* NOTES */
+  .slot-notes-wrap {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(0,0,0,0.1);
+  }
+  .slot-notes-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(0,0,0,0.35);
+    margin-bottom: 4px;
+  }
+  .slot-notes {
+    width: 100%;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 6px;
+    padding: 7px 10px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    background: rgba(255,255,255,0.7);
+    resize: vertical;
+    min-height: 56px;
+    color: var(--text-dark);
+    outline: none;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+  }
+  .slot-notes:focus { border-color: rgba(0,0,0,0.3); }
+  .slot-notes::placeholder { color: rgba(0,0,0,0.3); font-style: italic; }
+
   /* NOTICE */
   .notice {
     background: var(--gold-pale);
@@ -525,9 +633,163 @@
     gap: 10px;
   }
   .notice-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  /* LOGIN SCREEN */
+  #login-screen {
+    position: fixed;
+    inset: 0;
+    background: #2e2660;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  .login-box {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+  }
+  .login-logo {
+    height: 56px;
+    width: auto;
+    margin-bottom: 1.5rem;
+  }
+  .login-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    color: var(--navy);
+    margin-bottom: 0.3rem;
+  }
+  .login-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+  }
+  .login-input {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-dark);
+    outline: none;
+    transition: border-color 0.15s;
+    margin-bottom: 10px;
+  }
+  .login-input:focus { border-color: #2e2660; }
+  .login-btn {
+    width: 100%;
+    padding: 14px;
+    background: #2e2660;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s;
+    margin-top: 4px;
+  }
+  .login-btn:hover { background: #3d3280; }
+  .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .login-notice {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 1rem;
+    line-height: 1.5;
+  }
+  .login-error {
+    background: var(--red-bg);
+    color: var(--red);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    margin-bottom: 10px;
+    display: none;
+  }
+  .login-success {
+    background: var(--teal-bg);
+    color: var(--teal);
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 14px;
+    font-weight: 500;
+    display: none;
+    line-height: 1.5;
+  }
+
+  /* USER BAR */
+  .user-bar {
+    background: #2e2660;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+    font-size: 13px;
+  }
+  .user-bar-name { font-weight: 600; }
+  .user-bar-email { opacity: 0.65; font-size: 12px; }
+  .logout-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.15s;
+  }
+  .logout-btn:hover { background: rgba(255,255,255,0.25); }
+
+  /* SYNC INDICATOR */
+  .sync-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--teal);
+    margin-right: 5px;
+    vertical-align: middle;
+  }
+  .sync-dot.syncing { background: var(--amber); animation: pulse 1s infinite; }
+  .sync-dot.error { background: var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
 </style>
 </head>
 <body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <img class="login-logo" id="login-logo" alt="WBHS">
+    <div class="login-title">Grade 8 Exams 2026</div>
+    <div class="login-sub">Sign in with your WBHS email to access your personal study timetable</div>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-success" id="login-success"></div>
+    <div id="login-form">
+      <input class="login-input" type="email" id="email-input" placeholder="yourname@wbhs.org.za" autocomplete="email">
+      <button class="login-btn" id="login-btn" onclick="sendMagicLink()">Send Magic Link ✉</button>
+      <div class="login-notice">We'll send a login link to your school email — no password needed.<br>Only <strong>@wbhs.org.za</strong> addresses are accepted.</div>
+    </div>
+  </div>
+</div>
+
+<!-- USER BAR (shown when logged in) -->
+<div class="user-bar" id="user-bar" style="display:none">
+  <div>
+    <span class="sync-dot" id="sync-dot"></span>
+    <span class="user-bar-name" id="user-bar-email">—</span>
+  </div>
+  <button class="logout-btn" onclick="signOut()">Sign out</button>
+</div>
 
 <div class="header">
   <div class="header-logo-bar">
@@ -564,13 +826,21 @@
       <span>Set your daily sessions and mark which subjects need extra attention — the timetable auto-adjusts to front-load priority subjects in your remaining study days.</span>
     </div>
 
-    <div class="controls-grid">
+    <div class="controls-grid" style="grid-template-columns:1fr 1fr 1fr">
       <div class="control-card">
         <div class="control-label">Daily Study Sessions</div>
         <div class="sessions-toggle">
           <button id="btn-1" class="active" onclick="setSessions(1)">1 Subject <span style="font-size:11px;opacity:0.7;display:block">60 min total</span></button>
           <button id="btn-2" onclick="setSessions(2)">2 Subjects <span style="font-size:11px;opacity:0.7;display:block">30 min each</span></button>
         </div>
+      </div>
+      <div class="control-card">
+        <div class="control-label">Home Language</div>
+        <div class="lang-toggle">
+          <button id="lang-afr" class="active" onclick="setLanguage('afrikaans')">Afrikaans FAL</button>
+          <button id="lang-xho" onclick="setLanguage('isixhosa')">isiXhosa FAL</button>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted)">Select your language — the other is removed from your study plan</div>
       </div>
       <div class="control-card">
         <div class="control-label">Total Study Time</div>
@@ -680,7 +950,22 @@ const EXAM_DATA = [
   { date: '2026-06-20', weekend: true },
 ];
 
-const EXAM_SUBJECTS = [
+const SUBJECT_COLORS = [
+  '#1a4a7c','#9b2335','#b5480a','#4a2080','#0f6e56',
+  '#7a5c00','#5c2080','#1a6a1a','#7a1a5c','#0a5a5a',
+  '#7a3010','#3a5a0a','#2a2a7a','#7a1a1a'
+];
+const SUBJECT_BG_COLORS = [
+  '#e8f0fb','#fce8eb','#fff0e0','#ede8f7','#e1f5ee',
+  '#fdf6e3','#f0e8fb','#e8fbe8','#fbe8f5','#e8fbfb',
+  '#fbf0e8','#f5fbe8','#e8e8fb','#fbe8e8'
+];
+
+let sessionsPerDay = 1;
+let selectedLanguage = 'afrikaans'; // 'afrikaans' or 'isixhosa'
+let priorities = {};
+
+const ALL_EXAM_SUBJECTS = [
   'Technology',
   'EMS',
   'Natural Sciences',
@@ -695,20 +980,31 @@ const EXAM_SUBJECTS = [
   'Life Sciences',
 ];
 
-const SUBJECT_COLORS = [
-  '#1a4a7c','#9b2335','#b5480a','#4a2080','#0f6e56',
-  '#7a5c00','#5c2080','#1a6a1a','#7a1a5c','#0a5a5a',
-  '#7a3010','#3a5a0a','#2a2a7a','#7a1a1a'
-];
-const SUBJECT_BG_COLORS = [
-  '#e8f0fb','#fce8eb','#fff0e0','#ede8f7','#e1f5ee',
-  '#fdf6e3','#f0e8fb','#e8fbe8','#fbe8f5','#e8fbfb',
-  '#fbf0e8','#f5fbe8','#e8e8fb','#fbe8e8'
-];
+function getActiveSubjects() {
+  return ALL_EXAM_SUBJECTS.filter(s => {
+    if (s === 'Afrikaans FAL' && selectedLanguage !== 'afrikaans') return false;
+    if (s === 'isiXhosa FAL' && selectedLanguage !== 'isixhosa') return false;
+    return true;
+  });
+}
 
-let sessionsPerDay = 1;
-let priorities = {};
-EXAM_SUBJECTS.forEach(s => priorities[s] = 'medium');
+// Keep EXAM_SUBJECTS as a getter alias used throughout
+Object.defineProperty(window, 'EXAM_SUBJECTS', { get: getActiveSubjects });
+
+// Init priorities for all subjects
+ALL_EXAM_SUBJECTS.forEach(s => priorities[s] = 'medium');
+
+// ─── LANGUAGE TOGGLE ─────────────────────────────────────────────
+function setLanguage(lang) {
+  selectedLanguage = lang;
+  document.getElementById('lang-afr').classList.toggle('active', lang === 'afrikaans');
+  document.getElementById('lang-afr').classList.toggle('inactive', lang !== 'afrikaans');
+  document.getElementById('lang-xho').classList.toggle('active', lang === 'isixhosa');
+  document.getElementById('lang-xho').classList.toggle('inactive', lang !== 'isixhosa');
+  renderPriorityGrid();
+  renderStats();
+  generatePlan();
+}
 
 // ─── COUNTDOWN ────────────────────────────────────────────────────
 function updateCountdown() {
@@ -736,7 +1032,7 @@ function renderStats() {
   const allDays = getStudyDays();
   const weekdays = allDays.filter(d => !d.isWeekend);
   const weekends = allDays.filter(d => d.isWeekend);
-  const totalStudyHrs = weekdays.length * 1 + weekends.length * 2;
+  const totalStudyHrs = allDays.length;
   const examCount = EXAM_DATA.filter(d => !d.weekend && !d.holiday && d.sessions && d.sessions.some(s => !s.subject.includes('Study Period') && !s.special)).length;
   document.getElementById('stats-row').innerHTML = `
     <div class="stat-box"><div class="stat-num">${weekdays.length + weekends.length}</div><div class="stat-label">Study Days Left</div></div>
@@ -776,13 +1072,13 @@ function getStudyDays() {
 
 function updateStudySummary() {
   const days = getStudyDays();
-  const weekdays = days.filter(d => !d.isWeekend);
-  const weekends = days.filter(d => d.isWeekend);
-  const totalHrs = weekdays.length * 1 + weekends.length * 2;
+  const totalDays = days.length;
+  const totalHrs = totalDays * (sessionsPerDay === 1 ? 1 : 1); // always 1hr total per day (60 or 2×30)
   const perSubj = sessionsPerDay === 1 ? 60 : 30;
   document.getElementById('total-study-display').textContent = totalHrs + 'h';
   document.getElementById('study-days-display').textContent =
-    weekdays.length + ' weekdays · ' + weekends.length + ' weekend days';
+    days.filter(d => !d.isWeekend).length + ' weekdays · ' +
+    days.filter(d => d.isWeekend).length + ' weekend days';
 }
 
 // ─── PRIORITY GRID ────────────────────────────────────────────────
@@ -821,44 +1117,42 @@ function generatePlan() {
   let pool = [...high, ...high, ...high, ...medium, ...medium, ...low];
   if (pool.length === 0) pool = [...EXAM_SUBJECTS];
 
-  // Calculate total slots needed
-  const totalSlots = allDays.reduce((sum, d) => sum + (d.isWeekend ? 2 : sessionsPerDay), 0);
+  // Calculate total slots needed — weekends now use same sessionsPerDay as weekdays
+  const totalSlots = allDays.reduce((sum, d) => sum + sessionsPerDay, 0);
   const expanded = [];
   for (let i = 0; i < totalSlots; i++) expanded.push(pool[i % pool.length]);
 
   // Build day plans
   let slotIdx = 0;
   const dayPlans = allDays.map(d => {
-    const numSlots = d.isWeekend ? 2 : sessionsPerDay;
     const slots = [];
-    for (let s = 0; s < numSlots; s++) slots.push(expanded[slotIdx++]);
+    for (let s = 0; s < sessionsPerDay; s++) slots.push(expanded[slotIdx++]);
     return { date: d.date, isWeekend: d.isWeekend, slots };
   });
 
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const dnames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const minPerSlot = sessionsPerDay === 1 ? 60 : 30;
 
   let html = '';
-  dayPlans.forEach(dp => {
+  dayPlans.forEach((dp, dayIdx) => {
     const d = dp.date;
     const dd = d.getDate();
     const mon = months[d.getMonth()];
     const dname = dnames[d.getDay()];
     const isToday = new Date().toDateString() === d.toDateString();
-    const minPerSlot = dp.isWeekend ? 60 : (sessionsPerDay === 1 ? 60 : 30);
-    const subLabel = dp.isWeekend
-      ? '2 sessions · 60 min each'
-      : (dp.slots.length === 1 ? '60 min study' : '2 sessions · 30 min each');
+    const subLabel = sessionsPerDay === 1 ? '60 min study' : '2 sessions · 30 min each';
     const wkndStyle = dp.isWeekend ? 'border-left: 3px solid var(--gold);' : '';
+    const dayKey = `day-${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 
-    html += `<div class="study-day" style="${wkndStyle}">
+    html += `<div class="study-day" id="card-${dayKey}" style="${wkndStyle}">
       <div class="study-day-header">
-        <div class="study-day-date" style="${isToday ? 'background:var(--gold);color:var(--navy)' : dp.isWeekend ? 'background:#4a2080' : ''}">
+        <div class="study-day-date" id="datebox-${dayKey}" style="${isToday ? 'background:var(--gold);color:var(--navy)' : dp.isWeekend ? 'background:#4a2080' : ''}">
           <div class="dd">${dd}</div>
           <div class="mon">${mon}</div>
         </div>
-        <div>
-          <div class="study-day-name">${dname}${isToday ? ' <span style="font-size:11px;background:var(--gold);color:var(--navy);padding:2px 8px;border-radius:10px;font-weight:600">Today</span>' : ''}${dp.isWeekend ? ' <span style="font-size:11px;background:#ede8f7;color:#4a2080;padding:2px 8px;border-radius:10px;font-weight:600">Weekend</span>' : ''}</div>
+        <div style="flex:1">
+          <div class="study-day-name">${dname}${isToday ? ' <span style="font-size:11px;background:var(--gold);color:var(--navy);padding:2px 8px;border-radius:10px;font-weight:600">Today</span>' : ''}${dp.isWeekend ? ' <span style="font-size:11px;background:#ede8f7;color:#4a2080;padding:2px 8px;border-radius:10px;font-weight:600">Weekend</span>' : ''}<span class="day-complete-badge">&#10003; Done</span></div>
           <div class="study-day-sub">${subLabel}</div>
         </div>
         <div class="study-day-tags">
@@ -870,16 +1164,28 @@ function generatePlan() {
         </div>
       </div>
       <div class="study-day-body">
-        ${dp.slots.map(s => {
-          const ci = EXAM_SUBJECTS.indexOf(s) % SUBJECT_BG_COLORS.length;
+        ${dp.slots.map((s, slotIdx) => {
+          const ci = ALL_EXAM_SUBJECTS.indexOf(s) % SUBJECT_BG_COLORS.length;
           const bg = SUBJECT_BG_COLORS[ci] || '#f5f5f5';
           const fc = SUBJECT_COLORS[ci] || '#333';
           const p = priorities[s];
           const pDot = p === 'high' ? 'var(--red)' : p === 'medium' ? 'var(--amber)' : 'var(--teal)';
-          return `<div class="study-slot" style="background:${bg}">
-            <div class="slot-dot" style="background:${pDot}"></div>
-            <div class="slot-subject" style="color:${fc}">${s}</div>
-            <div class="slot-time">${minPerSlot} min</div>
+          const slotKey = `${dayKey}-slot${slotIdx}`;
+          const doneKey = `done-${slotKey}`;
+          const noteKey = `note-${slotKey}`;
+          const isDone = localStorage.getItem(doneKey) === '1';
+          const savedNote = localStorage.getItem(noteKey) || '';
+          return `<div class="study-slot${isDone ? ' done' : ''}" id="slot-${slotKey}" style="background:${bg};flex-direction:column;align-items:stretch;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="slot-dot" style="background:${pDot}"></div>
+              <div class="slot-subject" style="color:${fc};flex:1">${s}</div>
+              <div class="slot-time">${minPerSlot} min</div>
+              <button class="tick-btn${isDone ? ' ticked' : ''}" id="tick-${slotKey}" onclick="toggleDone('${slotKey}','${dayKey}')" title="${isDone ? 'Mark incomplete' : 'Mark complete'}">&#10003;</button>
+            </div>
+            <div class="slot-notes-wrap">
+              <div class="slot-notes-label">Notes — what did you cover?</div>
+              <textarea class="slot-notes" id="note-${slotKey}" placeholder="e.g. Chapter 3 — Newton's laws, practice problems p.45–48…" oninput="saveNote('${slotKey}', this.value)">${savedNote}</textarea>
+            </div>
           </div>`;
         }).join('')}
       </div>
@@ -887,7 +1193,45 @@ function generatePlan() {
   });
 
   document.getElementById('study-timetable').innerHTML = html;
+  // Re-apply all-done state on render
+  dayPlans.forEach((dp, dayIdx) => {
+    const d = dp.date;
+    const dayKey = `day-${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    checkDayComplete(dayKey, dp.slots.length);
+  });
   updateStudySummary();
+}
+
+// ─── TICK & NOTES ────────────────────────────────────────────────
+function toggleDone(slotKey, dayKey) {
+  const doneKey = `done-${slotKey}`;
+  const isDone = localStorage.getItem(doneKey) === '1';
+  const newState = !isDone;
+  localStorage.setItem(doneKey, newState ? '1' : '0');
+
+  const slotEl = document.getElementById(`slot-${slotKey}`);
+  const tickEl = document.getElementById(`tick-${slotKey}`);
+  if (slotEl) slotEl.classList.toggle('done', newState);
+  if (tickEl) { tickEl.classList.toggle('ticked', newState); tickEl.title = newState ? 'Mark incomplete' : 'Mark complete'; }
+
+  const card = document.getElementById(`card-${dayKey}`);
+  if (card) {
+    const total = card.querySelectorAll('.study-slot').length;
+    checkDayComplete(dayKey, total);
+  }
+}
+
+function saveNote(slotKey, value) {
+  localStorage.setItem(`note-${slotKey}`, value);
+}
+
+function checkDayComplete(dayKey, totalSlots) {
+  const card = document.getElementById(`card-${dayKey}`);
+  if (!card) return;
+  const slots = card.querySelectorAll('.study-slot');
+  const doneCount = [...slots].filter(s => s.classList.contains('done')).length;
+  const allDone = doneCount === totalSlots && totalSlots > 0;
+  card.classList.toggle('all-done', allDone);
 }
 
 // ─── EXAM TIMETABLE RENDERER ─────────────────────────────────────
@@ -928,7 +1272,7 @@ function renderExamTimetable() {
       return;
     }
 
-    const hasExams = entry.sessions && entry.sessions.some(s => !s.subject.includes('Study Period'));
+    const studySession = (entry.sessions || []).find(s => s.subject.includes('Study Period'));
     const examSessions = (entry.sessions || []).filter(s => !s.subject.includes('Study Period'));
 
     const isSpecial = examSessions.length === 1 && examSessions[0].special;
@@ -943,8 +1287,13 @@ function renderExamTimetable() {
         <div class="exam-date-box" ${dateBoxStyle}><div class="dd">${dd}</div><div class="mon">${mon}</div></div>
         <div class="exam-day-info" style="width:100%">
           <div class="exam-day-name">${dname}, ${dd} ${months[d.getMonth()]}</div>
-          ${examSessions.length === 0 ? '<div style="font-size:13px;color:var(--text-muted);margin-top:4px">No exams — optional study day</div>' : ''}
           <div class="exam-subjects">
+            ${studySession ? `<div class="exam-subject-row" style="background:#f1efe8;">
+              <div class="subj-start" style="color:#7a8a9c">${studySession.time}</div>
+              <div class="subj-name" style="color:#5f5e5a;font-style:italic;">Morning Study Period</div>
+              <div class="subj-time" style="color:#7a8a9c">${studySession.duration || '1 hr'}</div>
+            </div>` : ''}
+            ${examSessions.length === 0 ? '<div style="font-size:13px;color:var(--text-muted);padding:8px 14px">No exams — optional study day</div>' : ''}
             ${examSessions.map(s => {
               const ci = EXAM_SUBJECTS.findIndex(es => s.subject.toLowerCase().includes(es.toLowerCase()));
               const safeIdx = ci >= 0 ? ci : 0;
@@ -964,12 +1313,171 @@ function renderExamTimetable() {
   document.getElementById('exam-timetable').innerHTML = html;
 }
 
-// ─── INIT ─────────────────────────────────────────────────────────
-renderStats();
-renderPriorityGrid();
-updateStudySummary();
-renderExamTimetable();
-generatePlan();
+// ─── SUPABASE INIT ───────────────────────────────────────────────
+const SUPABASE_URL = 'https://ywrxujlqvxtgmzeqfrug.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_TKulG0rhj5GsCPb8J-9SmQ_lD5U74I4';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+
+// Copy logo src from main header img into login logo
+window.addEventListener('DOMContentLoaded', () => {
+  const mainImg = document.querySelector('.header-logo-bar img');
+  const loginImg = document.getElementById('login-logo');
+  if (mainImg && loginImg) loginImg.src = mainImg.src;
+});
+
+// ─── AUTH FUNCTIONS ───────────────────────────────────────────────
+async function sendMagicLink() {
+  const email = document.getElementById('email-input').value.trim().toLowerCase();
+  const errEl = document.getElementById('login-error');
+  const sucEl = document.getElementById('login-success');
+  const btn   = document.getElementById('login-btn');
+
+  errEl.style.display = 'none';
+  sucEl.style.display = 'none';
+
+  if (!email.endsWith('@wbhs.org.za')) {
+    errEl.textContent = 'Please use your @wbhs.org.za school email address.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+
+  const { error } = await sb.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: window.location.href }
+  });
+
+  if (error) {
+    errEl.textContent = 'Could not send link: ' + error.message;
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Send Magic Link ✉';
+  } else {
+    document.getElementById('login-form').style.display = 'none';
+    sucEl.innerHTML = `✉ Check your inbox!<br><span style="font-size:12px;opacity:0.8">A login link has been sent to <strong>${email}</strong><br>Click the link in your email to sign in.</span>`;
+    sucEl.style.display = 'block';
+  }
+}
+
+// Allow Enter key on email input
+document.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('email-input');
+  if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') sendMagicLink(); });
+});
+
+async function signOut() {
+  await sb.auth.signOut();
+  currentUser = null;
+  document.getElementById('user-bar').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-form').style.display = 'block';
+  document.getElementById('login-success').style.display = 'none';
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('login-btn').disabled = false;
+  document.getElementById('login-btn').textContent = 'Send Magic Link ✉';
+}
+
+function showApp(user) {
+  currentUser = user;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('user-bar').style.display = 'flex';
+  document.getElementById('user-bar-email').textContent = user.email;
+  renderStats();
+  renderPriorityGrid();
+  updateStudySummary();
+  renderExamTimetable();
+  generatePlan();
+}
+
+// ─── SUPABASE SYNC ────────────────────────────────────────────────
+function setSyncState(state) {
+  const dot = document.getElementById('sync-dot');
+  if (!dot) return;
+  dot.className = 'sync-dot' + (state === 'syncing' ? ' syncing' : state === 'error' ? ' error' : '');
+}
+
+async function syncToDB(slotKey, done, note) {
+  if (!currentUser) return;
+  setSyncState('syncing');
+  const { error } = await sb.from('study_progress').upsert({
+    user_id: currentUser.id,
+    slot_key: slotKey,
+    done: done,
+    note: note,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'user_id,slot_key' });
+  setSyncState(error ? 'error' : 'ok');
+}
+
+async function loadProgressFromDB() {
+  if (!currentUser) return;
+  setSyncState('syncing');
+  const { data, error } = await sb.from('study_progress')
+    .select('slot_key, done, note')
+    .eq('user_id', currentUser.id);
+  if (error) { setSyncState('error'); return; }
+  setSyncState('ok');
+  (data || []).forEach(row => {
+    // Apply done state
+    const slotEl = document.getElementById(`slot-${row.slot_key}`);
+    const tickEl = document.getElementById(`tick-${row.slot_key}`);
+    const noteEl = document.getElementById(`note-${row.slot_key}`);
+    if (slotEl && row.done) slotEl.classList.add('done');
+    if (tickEl && row.done) { tickEl.classList.add('ticked'); tickEl.title = 'Mark incomplete'; }
+    if (noteEl && row.note) noteEl.value = row.note;
+    // Also mirror to localStorage as fallback
+    if (row.done) localStorage.setItem(`done-${row.slot_key}`, '1');
+    if (row.note) localStorage.setItem(`note-${row.slot_key}`, row.note);
+  });
+  // Re-check day complete badges
+  document.querySelectorAll('.study-day').forEach(card => {
+    const total = card.querySelectorAll('.study-slot').length;
+    if (total > 0) {
+      const doneCount = card.querySelectorAll('.study-slot.done').length;
+      card.classList.toggle('all-done', doneCount === total);
+    }
+  });
+}
+
+// ─── OVERRIDE TICK AND NOTE TO SYNC ──────────────────────────────
+const _origToggleDone = toggleDone;
+window.toggleDone = function(slotKey, dayKey) {
+  _origToggleDone(slotKey, dayKey);
+  const isDone = document.getElementById(`slot-${slotKey}`)?.classList.contains('done');
+  const note = localStorage.getItem(`note-${slotKey}`) || '';
+  syncToDB(slotKey, isDone, note);
+};
+
+const _origSaveNote = saveNote;
+window.saveNote = function(slotKey, value) {
+  _origSaveNote(slotKey, value);
+  const isDone = document.getElementById(`slot-${slotKey}`)?.classList.contains('done') || false;
+  syncToDB(slotKey, isDone, value);
+};
+
+// ─── AUTH STATE LISTENER ──────────────────────────────────────────
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (session?.user) {
+    showApp(session.user);
+    // Load DB progress after plan is rendered
+    setTimeout(loadProgressFromDB, 300);
+  } else {
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+});
+
+// Check existing session on load
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    showApp(session.user);
+    setTimeout(loadProgressFromDB, 300);
+  }
+})();
 </script>
 </body>
 </html>
